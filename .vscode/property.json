@@ -1,0 +1,10 @@
+{
+	"toolChain": "xilinx",
+	"prjName": {
+		"PL": "MIPSCPU"
+	},
+	"soc": {
+		"core": "none"
+	},
+	"device": "xc7a35tfgg484-2"
+}
