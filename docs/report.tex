@@ -19,16 +19,19 @@
 \usepackage{listings}
 \usepackage[dvipsnames]{xcolor}
 \usepackage{fontspec}
+\usepackage{multicol}
+\usepackage[most]{tcolorbox}
+\tcbuselibrary{listings,breakable}
 
 \newfontfamily\codefont[
     Path = fonts/,
     Extension = .ttf,
-    UprightFont = *-Regular,  % JetBrainsMono-Regular
-    BoldFont = *-Bold,     % JetBrainsMono-Bold
+    UprightFont = *-Regular,
+    BoldFont = *-Bold,
     ItalicFont = *-Italic,
     BoldItalicFont = *-BoldItalic,
     Scale = MatchLowercase,
-]{JetBrainsMonoNL}
+]{SarasaMonoSC}
 \hypersetup{
     colorlinks=true,
     linkcolor=black,
@@ -37,8 +40,7 @@
     citecolor=black,
 }
 \lstdefinestyle{code}{ 
-    basicstyle   = \codefont\small,
-    columns      = fullflexible,
+    basicstyle   = \codefont,
     breaklines   = true,
     breakindent  = 0pt,
     tabsize      = 4,
@@ -46,12 +48,15 @@
     emphstyle    = \bfseries\color{Rhodamine},
     commentstyle = \itshape\color{PineGreen},
     stringstyle  = \bfseries\color{Orange!90!black},
-    columns      = flexible,
+    columns      = fixed,
     numbers      = left,
     numbersep    = 2em,
     numberstyle  = \footnotesize,
     frame        = single,
-    framesep     = 1em
+    framesep     = 1em,
+    keepspaces   = true,
+    showspaces   = false,
+    showstringspaces = false,
 }
 \lstset{style=code}
 \lstdefinelanguage[mips]{Assembler}{%
@@ -84,6 +89,23 @@
     \$t5,\$t6,\$t7,\$s0,\$s1,\$s2,\$s3,\$s4,\$s5,\$s6,\$s7,\$t8,\$t9,%
     \$k0,\$k1,\$gp,\$sp,\$fp,\$ra},
 }[strings,comments,keywords]
+\newtcblisting{CodeBlock}[1][]{
+  % ① 先写固定配置 ---------------------------
+  listing only,
+  breakable,
+  enhanced jigsaw,
+  colframe = blue!40!black,
+  colback  = blue!2,
+  arc      = 1mm,
+  left=2pt,right=2pt,top=2pt,bottom=2pt,
+  boxrule  = 0.4pt,
+  listing options = {
+    style=code,
+    keepspaces=true,
+  },
+  % ② 再把用户传进来的 *额外键值* 补到最后 ---
+  #1
+}
 \geometry{a4paper, scale=0.8}
 \pagestyle{fancy}
 \fancyhf{}
@@ -117,29 +139,7 @@
 
 \onecolumn
 \appendix
-\section{源代码}
-源代码的组织方式如下：
-\begin{lstlisting}[language={bash}, numbers=none]
-    user/
-    ├── src/
-    │   ├── top.v # 顶层模块
-    │   ├── cpu.v
-    │   ├── alu.v
-    │   ├── control.v
-    │   ├── data_memory.v
-    │   ├── instruction_memory.v
-    │   ├── register_file.v
-    │   ├── sign_extend.v
-    │   ├── shift_left_2.v
-    │   └── hazard_detection.v
-    ├── sim/
-    │   ├── sparse_matmul_mars.asm
-    │   └── sparse_matmul_mars.mars
-    └── tb/
-        ├── tb_cpu.v
-        └── tb_cpu.vcd
-\end{lstlisting}
-\lstinputlisting[language={Verilog}, caption={user/src/top.v}, label={code:src-top}]{../user/src/top.v}
-\lstinputlisting[language={[mips]Assembler}, caption={user/sim/sparse\_matmul\_mars.asm}, label={code:sim-matmul}]{../user/sim/sparse_matmul_mars.asm}
+% \input{secs/appA_sources.tex}
+
 
 \end{document}

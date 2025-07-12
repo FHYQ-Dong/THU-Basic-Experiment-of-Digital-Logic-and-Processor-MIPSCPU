@@ -13,7 +13,6 @@ mat_loop:                                                   # outest loop, contr
     lw      $t3,            ($t3)                           # $t3: the very number to be printed this time
     li      $t1,            0                               # $t1: middle loop variable
 time_loop:                                                  # middle loop, controlling the sequence of four positions' enabling
-    # 4096 * 3072 is for 73.2MHz pll; beware the position order (0 to l1 or l1 to 0) when writing .xdc file
     bge     $t1,            2837,               end_time    # taking turns of printing each position for 4096 loops
     li      $t2,            0
     sll     $t4,            $t1,                30          # an_i = 1 while other an's = 0, if i = $t4 (mod 4), $t4: lit position
@@ -123,10 +122,10 @@ end_time:
     # the main function of sparse matrix multiplication, search in the assembly homework for more detail
 sparse_matmul:
     la      $t0,            0x00000000
-    lw      $s0,            0($t0)                          # $s0: m
-    lw      $s1,            4($t0)                          # $s1: n
-    lw      $s2,            8($t0)                          # $s2: p
-    lw      $s3,            12($t0)                         # $s3: s
+    lw      $s0,            0x00000000($t0)                 # $s0: m
+    lw      $s1,            0x00000004($t0)                 # $s1: n
+    lw      $s2,            0x00000008($t0)                 # $s2: p
+    lw      $s3,            0x0000000c($t0)                 # $s3: s
 
     addi    $s4,            $t0,                16          # $s4: values
 
@@ -148,11 +147,11 @@ sparse_matmul:
     la      $t1,            0x00000100                      # $t1: C
     mul     $t2,            $t0,                4           # $t2: (int*)%i;
     add     $t1,            $t1,                $t2         # $t1 = C + i;
-    sw      $zero,          ($t1)                           # C[i] = 0;
+    sw      $zero,          0x00000000($t1)                 # C[i] = 0;
 
     addi    $t0,            $t0,                1           # i++;
     j       loop_0                                          # go back to the beginning of the loop
-    end_loop_0:
+end_loop_0:
 
     # the big loop, with $t3 used multiple times in different loops
     # t3: start, t4: i, t5: j, t6: k, t7: l, t8: end, t9: val
@@ -162,8 +161,8 @@ sparse_matmul:
 
     mul     $t8,            $t4,                4           # end = (int*)i;
     add     $t8,            $s6,                $t8         # end = row_ptr[i];
-    lw      $t3,            ($t8)                           # start = row_ptr[i];
-    lw      $t8,            4($t8)                          # end = row_ptr[i + 1]
+    lw      $t3,            0x00000000($t8)                 # start = row_ptr[i];
+    lw      $t8,            0x00000004($t8)                 # end = row_ptr[i + 1]
 
     # middle loop
     add     $t5,            $zero,              $t3         # int j = start;
@@ -172,11 +171,11 @@ sparse_matmul:
 
     mul     $t6,            $t5,                4           # k = (int*)j;
     add     $t6,            $s5,                $t6         # k = &col_indices[j];
-    lw      $t6,            ($t6)                           # k = col_indices[j];
+    lw      $t6,            0x00000000($t6)                 # k = col_indices[j];
 
     mul     $t9,            $t5,                4           # val = (int*)j;
     add     $t9,            $s4,                $t9         # val = &values[j];
-    lw      $t9,            ($t9)                           # val = values[j];
+    lw      $t9,            0x00000000($t9)                 # val = values[j];
 
     #inner loop
     li      $t7,            0                               # int l = 0;
@@ -194,22 +193,22 @@ sparse_matmul:
     mul     $t2,            $t2,                4           # (int*)$t2;
     add     $t2,            $t2,                $s7         # $t2 = &B[k * p + l];
 
-    lw      $t3,            ($t1)                           # $t3: c_val = C[i * p + l];
-    lw      $t2,            ($t2)                           # $t2 = B[k * p + l];
+    lw      $t3,            0x00000000($t1)                 # $t3: c_val = C[i * p + l];
+    lw      $t2,            0x00000000($t2)                 # $t2 = B[k * p + l];
     mul     $t2,            $t2,                $t9         # $t2 = val * B[k * p + l];
     add     $t3,            $t3,                $t2         # c_val = c_val + val * B[k * p + l];
-    sw      $t3,            ($t1)                           # C[i * p + l] = c_val;
+    sw      $t3,            0x00000000($t1)                 # C[i * p + l] = c_val;
 
     addi    $t7,            $t7,                1           # l++;
     j       loop_1                                          # go back to the beginning of the loop
-    end_loop_1:
+end_loop_1:
     addi    $t5,            $t5,                1           # j++;
     j       loop_2                                          # go back to the beginning of the loop
-    end_loop_2:
+end_loop_2:
 
     addi    $t4,            $t4,                1           # i++;
     j       loop_3                                          # go back to the beginning of the loop
-    end_loop_3:
+end_loop_3:
     mul     $v0,            $s0,                $s2         # calculate m * p;
     jr      $ra                                             # return m * p;
 
