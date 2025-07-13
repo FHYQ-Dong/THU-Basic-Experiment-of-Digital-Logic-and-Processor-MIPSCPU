@@ -12,10 +12,10 @@
 
 .text
     la      $t0,    0x00000000
-    lw      $s0,    0x10010000($t0)                 # $s0: m
-    lw      $s1,    0x10010004($t0)                 # $s1: n
-    lw      $s2,    0x10010008($t0)                 # $s2: p
-    lw      $s3,    0x1001000c($t0)                 # $s3: s
+    lw      $s0,    0x00000000($t0)                 # $s0: m
+    lw      $s1,    0x00000004($t0)                 # $s1: n
+    lw      $s2,    0x00000008($t0)                 # $s2: p
+    lw      $s3,    0x0000000c($t0)                 # $s3: s
 
     addi    $s4,    $t0,                16          # $s4: values
 
@@ -37,7 +37,7 @@
     la      $t1,    0x00000100                      # $t1: C
     mul     $t2,    $t0,                4           # $t2: (int*)%i;
     add     $t1,    $t1,                $t2         # $t1 = C + i;
-    sw      $zero,  0x10010000($t1)                 # C[i] = 0;
+    sw      $zero,  0x00000000($t1)                 # C[i] = 0;
 
     addi    $t0,    $t0,                1           # i++;
     j       loop_0                                  # go back to the beginning of the loop
@@ -51,8 +51,8 @@ end_loop_0:
 
     mul     $t8,    $t4,                4           # end = (int*)i;
     add     $t8,    $s6,                $t8         # end = row_ptr[i];
-    lw      $t3,    0x10010000($t8)                 # start = row_ptr[i];
-    lw      $t8,    0x10010004($t8)                 # end = row_ptr[i + 1]
+    lw      $t3,    0x00000000($t8)                 # start = row_ptr[i];
+    lw      $t8,    0x00000004($t8)                 # end = row_ptr[i + 1]
 
     # middle loop
     add     $t5,    $zero,              $t3         # int j = start;
@@ -61,11 +61,11 @@ end_loop_0:
 
     mul     $t6,    $t5,                4           # k = (int*)j;
     add     $t6,    $s5,                $t6         # k = &col_indices[j];
-    lw      $t6,    0x10010000($t6)                 # k = col_indices[j];
+    lw      $t6,    0x00000000($t6)                 # k = col_indices[j];
 
     mul     $t9,    $t5,                4           # val = (int*)j;
     add     $t9,    $s4,                $t9         # val = &values[j];
-    lw      $t9,    0x10010000($t9)                 # val = values[j];
+    lw      $t9,    0x00000000($t9)                 # val = values[j];
 
     # inner loop
     li      $t7,    0                               # int l = 0;
@@ -83,11 +83,11 @@ end_loop_0:
     mul     $t2,    $t2,                4           # (int*)$t2;
     add     $t2,    $t2,                $s7         # $t2 = &B[k * p + l];
 
-    lw      $t3,    0x10010000($t1)                 # $t3: c_val = C[i * p + l];
-    lw      $t2,    0x10010000($t2)                 # $t2 = B[k * p + l];
+    lw      $t3,    0x00000000($t1)                 # $t3: c_val = C[i * p + l];
+    lw      $t2,    0x00000000($t2)                 # $t2 = B[k * p + l];
     mul     $t2,    $t2,                $t9         # $t2 = val * B[k * p + l];
     add     $t3,    $t3,                $t2         # c_val = c_val + val * B[k * p + l];
-    sw      $t3,    0x10010000($t1)                 # C[i * p + l] = c_val;
+    sw      $t3,    0x00000000($t1)                 # C[i * p + l] = c_val;
 
     addi    $t7,    $t7,                1           # l++;
     j       loop_1                                  # go back to the beginning of the loop
