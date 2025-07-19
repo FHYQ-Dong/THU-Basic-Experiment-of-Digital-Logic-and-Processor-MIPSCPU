@@ -1,5 +1,5 @@
 # 100MHz clock
-set_property -dict {PACKAGE_PIN R4 IOSTANDARD LVCMOS33} [get_ports {clk}]
+set_property -dict {PACKAGE_PIN R4 IOSTANDARD LVCMOS33} [get_ports {clk_in}]
 
 # reset: KEY3
 set_property -dict {PACKAGE_PIN K22 IOSTANDARD LVCMOS33} [get_ports {reset}]

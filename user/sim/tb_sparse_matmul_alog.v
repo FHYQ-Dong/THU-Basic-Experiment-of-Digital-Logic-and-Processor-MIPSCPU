@@ -5,14 +5,14 @@
 `timescale 1ns / 1ps
 `define SIMULATION
 
-module tb_sparse_matmul_mars ();
+module tb_sparse_matmul_alog ();
     reg             clk;
     reg             reset;
     wire [12 -1: 0] BCD7;
 
     // Instantiate the CPU module
     CPU #(
-        .INST_FILE("user/sim/tb_sparse_matmul_mars.inst")
+        .INST_FILE("user/sim/tb_sparse_matmul_alog.inst")
     ) u_cpu (
         .clk   (clk),
         .reset (reset),
@@ -39,7 +39,7 @@ module tb_sparse_matmul_mars ();
 
     // Save waveform data
     initial begin
-        $dumpfile("prj/icarus/tb_sparse_matmul_mars.vcd"); // Dump waveform data
-        $dumpvars(0, tb_sparse_matmul_mars); // Dump all variables in the testbench
+        $dumpfile("prj/icarus/tb_sparse_matmul_alog.vcd"); // Dump waveform data
+        $dumpvars(0, tb_sparse_matmul_alog); // Dump all variables in the testbench
     end
 endmodule

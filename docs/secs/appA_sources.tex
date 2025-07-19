@@ -1,38 +1,47 @@
 \section{源代码}
-源代码的组织方式如下：
+
+\subsection{项目文件结构}
+项目文件结构如下：
 \begin{lstlisting}[language={bash}, numbers=none]
     user/
-    ├── src/ # 存放各个单元的实现代码
-    │   ├── top.v              # 顶层模块，包括CPU和分频器
-    │   ├── ALU.v              # ALU和ALU控制单元的实现
-    │   ├── Control.v          # 控制单元的实现
-    │   ├── CPU.v              # 将各个模块连接成为一个完整的CPU
-    │   ├── Forwarding.v       # 转发单元的实现
-    │   ├── Hazard.v           # 冒险检测单元的实现
-    │   ├── Memory.v           # 指令存储器和数据存储器的实现
-    │   ├── PC.v               # PC寄存器和相关逻辑的实现
-    │   ├── Register.v         # 寄存器堆、级间寄存器的实现
-    │   ├── sparse_matmul.asm  # 稀疏矩阵乘法的汇编代码
-    │   └── sparse_matmul.inst # 由Mars将汇编代码翻译而成的机器码
-    └── sim/ # 存放仿真相关代码
-        ├── asm2inst.py                # 使用python调用Mars将汇编代码转换为机器码
-        ├── Mars4_5.jar                # Mars仿真器的jar包
-        ├── printbin.py                # 使用python将二进制文件中的数据打印出来
-        ├── tb_sparse_matmul_mars.asm  # 仅含有稀疏矩阵乘法算法的汇编代码，用于统计指令数
-        ├── tb_sparse_matmul_mars.inst # 由Mars将稀疏矩阵乘法算法的汇编代码翻译成的机器码
-        ├── tb_sparse_matmul_mars.v    # 稀疏矩阵乘法算法测试模块的Verilog代码
-        ├── tb_sparse_matmul_mars.in   # 二进制文件，稀疏矩阵乘法算法的输入数据
-        ├── tb_sparse_matmul_mars.out  # 二进制文件，稀疏矩阵乘法算法的输出数据
-        ├── tb_CPU_inst_1.asm          # CPU测试用例1的汇编代码，包括算术指令和转发
-        ├── tb_CPU_inst_1.inst         # 由Mars将CPU测试用例1的汇编代码翻译成的机器码
-        ├── tb_CPU_inst_1.v            # CPU测试用例1的Verilog代码
-        ├── tb_CPU_inst_2.asm          # CPU测试用例2的汇编代码，包括控制指令和冒险
-        ├── tb_CPU_inst_2.inst         # 由Mars将CPU测试用例2的汇编代码翻译成的机器码
-        ├── tb_CPU_inst_2.v            # CPU测试用例2的Verilog代码
-        ├── tb_CPU_inst_3.asm          # CPU测试用例3的汇编代码，包括稀疏矩阵乘法和BCD7显示
-        ├── tb_CPU_inst_3.inst         # 由Mars将CPU测试用例3的汇编代码翻译成的机器码
-        └── tb_CPU_inst_3.v            # CPU测试用例3的Verilog代码
+    ├── src/ # 存放各CPU设计代码
+    │   ├── top.v                      # 顶层模块，包括CPU和分频器
+    │   ├── ALU.v                      # ALU和ALU控制单元的实现
+    │   ├── Control.v                  # 控制单元的实现
+    │   ├── CPU.v                      # 将各个模块连接成为一个完整的CPU
+    │   ├── Forwarding.v               # 转发单元的实现
+    │   ├── Hazard.v                   # 冒险检测单元的实现
+    │   ├── Memory.v                   # 指令存储器和数据存储器的实现
+    │   ├── PC.v                       # PC寄存器和相关逻辑的实现
+    │   ├── Register.v                 # 寄存器堆、级间寄存器的实现
+    │   ├── sparse_matmul.asm          # 稀疏矩阵乘法的汇编代码
+    │   └── sparse_matmul.inst         # 由Mars将汇编代码翻译而成的机器码
+    ├── sim/ # 存放仿真相关代码
+    │   ├── asm2inst.py                # 使用python调用Mars将汇编代码转换为机器码
+    │   ├── Mars4_5.jar                # Mars仿真器的jar包
+    │   ├── printbin.py                # 使用python将二进制文件中的数据打印出来
+    │   ├── tb_sparse_matmul_alog.asm  # 仅含有稀疏矩阵乘法算法的汇编代码，用于统计指令数
+    │   ├── tb_sparse_matmul_alog.inst # 由Mars将稀疏矩阵乘法算法的汇编代码翻译成的机器码
+    │   ├── tb_sparse_matmul_alog.v    # 稀疏矩阵乘法算法测试模块的Verilog代码
+    │   ├── tb_sparse_matmul_alog.in   # 二进制文件，稀疏矩阵乘法算法的输入数据
+    │   ├── tb_sparse_matmul_alog.out  # 二进制文件，稀疏矩阵乘法算法的输出数据
+    │   ├── tb_CPU_inst_1.asm          # CPU测试用例1的汇编代码，包括算术指令和转发
+    │   ├── tb_CPU_inst_1.inst         # 由Mars将CPU测试用例1的汇编代码翻译成的机器码
+    │   ├── tb_CPU_inst_1.v            # CPU测试用例1的Verilog代码
+    │   ├── tb_CPU_inst_2.asm          # CPU测试用例2的汇编代码，包括控制指令和冒险
+    │   ├── tb_CPU_inst_2.inst         # 由Mars将CPU测试用例2的汇编代码翻译成的机器码
+    │   ├── tb_CPU_inst_2.v            # CPU测试用例2的Verilog代码
+    │   ├── tb_CPU_inst_3.asm          # CPU测试用例3的汇编代码，包括稀疏矩阵乘法和BCD7显示
+    │   ├── tb_CPU_inst_3.inst         # 由Mars将CPU测试用例3的汇编代码翻译成的机器码
+    │   └── tb_CPU_inst_3.v            # CPU测试用例3的Verilog代码
+    ├── data/
+    │   ├── MIPSCPU.xdc                # Vivado的约束文件
+    │   └── bin/
+    │       └── top.bin                # Vivado生成的bitstream
+    └── ip/ # Vivado生成的ip核
 \end{lstlisting}
+
+\subsection{硬件设计代码}
 \lstinputlisting[language={Verilog}, caption={user/src/top.v}, label={code:src-top}]{../user/src/top.v}
 \lstinputlisting[language={Verilog}, caption={user/src/ALU.v}, label={code:src-ALU}]{../user/src/ALU.v}
 \lstinputlisting[language={Verilog}, caption={user/src/Control.v}, label={code:src-Control}]{../user/src/Control.v}
@@ -45,10 +54,11 @@
 \lstinputlisting[language={[mips]Assembler}, caption={user/src/sparse\_matmul.asm}, label={code:src-sparse-matmul-asm}]{../user/src/sparse_matmul.asm}
 \lstinputlisting[caption={user/src/sparse\_matmul.inst}, label={code:src-sparse-matmul-inst}]{../user/src/sparse_matmul.inst}
 
+\subsection{仿真代码}
 \lstinputlisting[language={Python}, caption={user/sim/asm2inst.py}, label={code:sim-asm2inst}]{../user/sim/asm2inst.py}
 \lstinputlisting[language={Python}, caption={user/sim/printbin.py}, label={code:sim-printbin}]{../user/sim/printbin.py}
-\lstinputlisting[language={[mips]Assembler}, caption={user/sim/sparse\_matmul\_mars.asm}, label={code:sim-tb-sparse-matmul-mars-asm}]{../user/sim/tb_sparse_matmul_mars.asm}
-\lstinputlisting[language={Verilog}, caption={user/sim/tb\_sparse\_matmul\_mars.v}, label={code:sim-tb-sparse-matmul-mars-v}]{../user/sim/tb_sparse_matmul_mars.v}
+\lstinputlisting[language={[mips]Assembler}, caption={user/sim/sparse\_matmul\_mars.asm}, label={code:sim-tb-sparse-matmul-alog-asm}]{../user/sim/tb_sparse_matmul_alog.asm}
+\lstinputlisting[language={Verilog}, caption={user/sim/tb\_sparse\_matmul\_alog.v}, label={code:sim-tb-sparse-matmul-alog-v}]{../user/sim/tb_sparse_matmul_alog.v}
 \lstinputlisting[language={[mips]Assembler}, caption={user/sim/tb\_CPU\_inst\_1.asm}, label={code:sim-tb-CPU-inst-1-asm}]{../user/sim/tb_CPU_inst_1.asm}
 \lstinputlisting[language={Verilog}, caption={user/sim/tb\_CPU\_inst\_1.v}, label={code:sim-tb-CPU-inst-1-v}]{../user/sim/tb_CPU_inst_1.v}
 \lstinputlisting[language={[mips]Assembler}, caption={user/sim/tb\_CPU\_inst\_2.asm}, label={code:sim-tb-CPU-inst-2-asm}]{../user/sim/tb_CPU_inst_2.asm}
@@ -57,8 +67,11 @@
 \lstinputlisting[language={Verilog}, caption={user/sim/tb\_CPU\_inst\_3.v}, label={code:sim-tb-CPU-inst-3-v}]{../user/sim/tb_CPU_inst_3.v}
 \setlength{\columnsep}{50pt}
 \twocolumn
-\lstinputlisting[caption={user/sim/tb\_sparse\_matmul\_mars.inst}, label={code:sim-tb-sparse-matmul-mars-inst}]{../user/sim/tb_sparse_matmul_mars.inst}
+\lstinputlisting[caption={user/sim/tb\_sparse\_matmul\_alog.inst}, label={code:sim-tb-sparse-matmul-alog-inst}]{../user/sim/tb_sparse_matmul_alog.inst}
 \lstinputlisting[caption={user/sim/tb\_CPU\_inst\_1.inst}, label={code:sim-tb-CPU-inst-1-inst}]{../user/sim/tb_CPU_inst_1.inst}
 \lstinputlisting[caption={user/sim/tb\_CPU\_inst\_2.inst}, label={code:sim-tb-CPU-inst-2-inst}]{../user/sim/tb_CPU_inst_2.inst}
 \lstinputlisting[caption={user/sim/tb\_CPU\_inst\_3.inst}, label={code:sim-tb-CPU-inst-3-inst}]{../user/sim/tb_CPU_inst_3.inst}
 \onecolumn
+
+\subsection{约束文件}
+\lstinputlisting[caption={user/data/MIPSCPU.xdc}, label={code:data-MIPSCPU-xdc}]{../user/data/MIPSCPU.xdc}

@@ -1,0 +1,62 @@
+\section{设计方案}
+
+\subsection{支持的指令}
+CPU支持如下指令
+\begin{table}[H]
+    \centering
+    \begin{threeparttable}
+    \begin{tabular}{ccc}
+        \toprule
+        R型指令 & I型指令 & J型指令 \\ 
+        \midrule
+        add  & lw    & j   \\
+        addu & sw    & jal \\
+        sub  & lui   &     \\
+        subu & addi  &     \\
+        mul  & addiu &     \\
+        and  & andi  &     \\
+        or   & ori\tnote{*} & \\
+        xor  & slti  &     \\
+        nor  & sltiu &     \\
+        sll  & beq   &     \\
+        srl  & bne   &     \\
+        sra  & blez  &     \\
+        slt  & bgtz  &     \\
+        sltu & bltz  &     \\
+        jr   &       &     \\
+        jalr &       &     \\
+        \bottomrule
+    \end{tabular}
+    \begin{tablenotes}
+        \footnotesize
+        \item[*] 非硬性要求实现的指令，但是Mars翻译出的机器码中存在该指令，需要支持。
+    \end{tablenotes}
+    \end{threeparttable}
+    \caption{CPU支持的指令}
+    \label{tab:supported-instruction}
+\end{table}
+
+\subsection{模块设计}
+CPU的设计分为以下几个模块：
+\begin{itemize}
+    \item \textbf{顶层模块 \lstinline|top|}：包括CPU和分频器，使CPU在合适的时钟频率下工作。
+    \item \textbf{ALU和ALU控制单元 \lstinline|ALU, ALUControlUnit|}：实现算术逻辑运算和ALU控制信号的生成。
+    \item \textbf{寄存器堆 \lstinline|RegisterFile|}：实现寄存器的读写操作。
+    \item \textbf{指令存储器 \lstinline|InstMem|}：存储指令并提供指令读取功能。
+    \item \textbf{数据存储器 \lstinline|DataMem|}：存储数据并提供数据读取和写入功能。
+    \item \textbf{控制单元 \lstinline|ControlUnit|}：根据指令类型生成控制信号，控制数据流和操作。
+    \item \textbf{程序计数器 \lstinline|PC|}：存储当前执行的指令地址，并在每个时钟周期更新。
+    \item \textbf{转发单元 \lstinline|ForwardUnit|}：处理数据冒险，通过转发机制解决数据依赖问题。
+    \item \textbf{冒险检测单元 \lstinline|HazardUnit|}：检测数据冒险和控制冒险，并生成相应的控制信号。
+    \item \textbf{立即数扩展单元 \lstinline|ImmExtendUnit|}：将立即数按需扩展，以便进行后续操作。
+    \item \textbf{级间寄存器 \lstinline|\{IFID, IDEX, EXMEM, MEMWB\}Regs|}：存储流水线各级之间的中间结果，确保数据在流水线中正确传递。
+\end{itemize}
+    
+\subsection{模块框图}
+见图 \ref{fig:cpu-flowchart}.
+\begin{figure*}[h]
+    \centering
+    \includegraphics[width=0.8\linewidth]{images/Flowchart.pdf}
+    \caption{CPU模块框图}
+    \label{fig:cpu-flowchart}
+\end{figure*}
