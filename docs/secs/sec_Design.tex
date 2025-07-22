@@ -40,7 +40,8 @@ CPU支持如下指令
 CPU的设计分为以下几个模块：
 \begin{itemize}
     \item \textbf{顶层模块 \lstinline|top|}：包括CPU和分频器，使CPU在合适的时钟频率下工作。
-    \item \textbf{ALU和ALU控制单元 \lstinline|ALU, ALUControlUnit|}：实现算术逻辑运算和ALU控制信号的生成。
+    \item \textbf{CPU模块 \lstinline|CPU|}：将各个CPU的子模块连接起来，形成完整的CPU。
+    \item \textbf{ALU和ALU控制单元 \lstinline|ALU, ALUControlUnit|}：实现算术逻辑运算和进行ALU前置处理。
     \item \textbf{寄存器堆 \lstinline|RegisterFile|}：实现寄存器的读写操作。
     \item \textbf{指令存储器 \lstinline|InstMem|}：存储指令并提供指令读取功能。
     \item \textbf{数据存储器 \lstinline|DataMem|}：存储数据并提供数据读取和写入功能。
@@ -54,9 +55,27 @@ CPU的设计分为以下几个模块：
     
 \subsection{模块框图}
 见图 \ref{fig:cpu-flowchart}.
-\begin{figure*}[h]
+\begin{figure*}[ht]
     \centering
     \includegraphics[width=0.8\linewidth]{images/Flowchart.pdf}
     \caption{CPU模块框图}
     \label{fig:cpu-flowchart}
 \end{figure*}
+
+\subsection{模块设计细节}
+
+\subsubsection{顶层模块 \lstinline|top|}
+顶层模块包括CPU和分频器。分频器使用锁相环IP实现，按照时序分析的结果使CPU在支持的最高频率下工作。
+\subsubsection{CPU模块 \lstinline|CPU|}
+CPU模块将各个子模块连接起来，形成完整的CPU。各个模块之间的简单逻辑也被放在该模块内实现，具体包括：
+\begin{itemize}
+    \item 将PC+4的高4位与指令的立即数部分和2'h00拼接，形成完整的 \lstinline|j| 指令的跳转地址。
+    \item 将PC+4的高4位与指令的立即数部分和2'h00相加，形成完整的branch类型指令的跳转地址。
+    \item 选择 \lstinline|PC| 从何处转发 \lstinline|jr, jalr| 指令所需的寄存器数据。
+    \item 选择 \lstinline|ALUControlUnit| 从 \lstinline|EXMEMRegs| 转发时转发何值。
+    \item 根据 \lstinline|RegDst| 控制信号决定 \lstinline|EXMEMRegs.RegWrite_Addr| 为何值。
+    \item 选择 \lstinline|DataMem| 从何处转发 \lstinline|DataMem.WriteData|.
+\end{itemize}
+
+\subsubsection{ALU和ALU控制单元 \lstinline|ALU, ALUControlUnit|}
+ALU模块根据 \lstinline|ALUOp| 控制信号进行相应的运算。ALU控制单元根据 \lstinline|ALUSrc| 控制信号和各个数据来源决定ALU的输入。
