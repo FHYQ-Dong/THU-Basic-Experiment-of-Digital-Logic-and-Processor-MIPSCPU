@@ -24,13 +24,13 @@ module tb_CPU_inst_1 ();
     // Clock generation
     initial begin
         clk = 0;
-        forever #50 clk = ~clk; // Toggle clock every 5 time units
+        forever #5 clk = ~clk; // Toggle clock every 5 time units
     end
 
     // Reset generation
     initial begin
         reset = 1; // Assert reset
-        #100 reset = 0; // Deassert reset after 10 time units
+        #10 reset = 0; // Deassert reset after 10 time units
     end
 
     // Simulation control

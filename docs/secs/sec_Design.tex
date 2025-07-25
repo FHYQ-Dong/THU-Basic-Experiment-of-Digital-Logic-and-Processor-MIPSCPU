@@ -2,6 +2,7 @@
 
 \subsection{支持的指令}
 CPU支持如下指令
+
 \begin{table}[H]
     \centering
     \begin{threeparttable}
@@ -36,25 +37,36 @@ CPU支持如下指令
     \label{tab:supported-instruction}
 \end{table}
 
+\subsection{流水线分级}
+CPU设计采用五级流水线，分为取指IF、译码ID、执行EX、存储器访问MEM和写回WB五个阶段，另设有不属于任何一个阶段的转发单元和冒险检测单元。各个阶段的功能如下：
+\begin{itemize}
+    \item IF：从指令存储器中读取指令，并将程序计数器PC更新为下一条指令的地址。
+    \item ID：译码指令，读取寄存器堆中的数据，并进行立即数扩展。
+    \item EX：执行算术逻辑运算，计算跳转地址。
+    \item MEM：访问数据存储器，读取或写入数据。
+    \item WB：将数据写回寄存器堆。
+\end{itemize}
+
 \subsection{模块设计}
 CPU的设计分为以下几个模块：
 \begin{itemize}
-    \item \textbf{顶层模块 \lstinline|top|}：包括CPU和分频器，使CPU在合适的时钟频率下工作。
-    \item \textbf{CPU模块 \lstinline|CPU|}：将各个CPU的子模块连接起来，形成完整的CPU。
-    \item \textbf{ALU和ALU控制单元 \lstinline|ALU, ALUControlUnit|}：实现算术逻辑运算和进行ALU前置处理。
-    \item \textbf{寄存器堆 \lstinline|RegisterFile|}：实现寄存器的读写操作。
-    \item \textbf{指令存储器 \lstinline|InstMem|}：存储指令并提供指令读取功能。
-    \item \textbf{数据存储器 \lstinline|DataMem|}：存储数据并提供数据读取和写入功能。
-    \item \textbf{控制单元 \lstinline|ControlUnit|}：根据指令类型生成控制信号，控制数据流和操作。
-    \item \textbf{程序计数器 \lstinline|PC|}：存储当前执行的指令地址，并在每个时钟周期更新。
-    \item \textbf{转发单元 \lstinline|ForwardUnit|}：处理数据冒险，通过转发机制解决数据依赖问题。
-    \item \textbf{冒险检测单元 \lstinline|HazardUnit|}：检测数据冒险和控制冒险，并生成相应的控制信号。
-    \item \textbf{立即数扩展单元 \lstinline|ImmExtendUnit|}：将立即数按需扩展，以便进行后续操作。
-    \item \textbf{级间寄存器 \lstinline|\{IFID, IDEX, EXMEM, MEMWB\}Regs|}：存储流水线各级之间的中间结果，确保数据在流水线中正确传递。
+    \item 顶层模块top.
+    \item CPU模块CPU.
+    \item ALU和ALU控制单元ALU, ALUControlUnit.
+    \item 寄存器堆RegisterFile.
+    \item 指令存储器InstMem.
+    \item 数据存储器DataMem.
+    \item 控制单元ControlUnit.
+    \item 程序计数器PC.
+    \item 转发单元ForwardUnit.
+    \item 冒险检测单元HazardUnit.
+    \item 立即数扩展单元ImmExtendUnit.
+    \item 级间寄存器\{IFID,IDEX,EXMEM,\\MEMWB\}Regs.
 \end{itemize}
     
 \subsection{模块框图}
 见图 \ref{fig:cpu-flowchart}.
+
 \begin{figure*}[ht]
     \centering
     \includegraphics[width=0.8\linewidth]{images/Flowchart.pdf}
@@ -64,18 +76,70 @@ CPU的设计分为以下几个模块：
 
 \subsection{模块设计细节}
 
-\subsubsection{顶层模块 \lstinline|top|}
-顶层模块包括CPU和分频器。分频器使用锁相环IP实现，按照时序分析的结果使CPU在支持的最高频率下工作。
-\subsubsection{CPU模块 \lstinline|CPU|}
+\subsubsection{顶层模块top}
+顶层模块包括CPU和分频器。分频器使用锁相环IP实现，按照时序分析的结果使CPU在支持的最高时钟/频率下工作。
+
+\subsubsection{CPU模块CPU}
 CPU模块将各个子模块连接起来，形成完整的CPU。各个模块之间的简单逻辑也被放在该模块内实现，具体包括：
 \begin{itemize}
-    \item 将PC+4的高4位与指令的立即数部分和2'h00拼接，形成完整的 \lstinline|j| 指令的跳转地址。
+    \item 将PC+4的高4位与指令的立即数部分和2'h00拼接，形成完整的j指令的跳转地址。
     \item 将PC+4的高4位与指令的立即数部分和2'h00相加，形成完整的branch类型指令的跳转地址。
-    \item 选择 \lstinline|PC| 从何处转发 \lstinline|jr, jalr| 指令所需的寄存器数据。
-    \item 选择 \lstinline|ALUControlUnit| 从 \lstinline|EXMEMRegs| 转发时转发何值。
-    \item 根据 \lstinline|RegDst| 控制信号决定 \lstinline|EXMEMRegs.RegWrite_Addr| 为何值。
-    \item 选择 \lstinline|DataMem| 从何处转发 \lstinline|DataMem.WriteData|.
+    \item 选择PC从何处转发jr, jalr指令所需的寄存器数据。
+    \item 选择ALUControlUnit从EXMEMRegs转发时转发何值。
+    \item 根据RegDst控制信号决定EXMEMRegs.RegWrite\_Addr为何值。
+    \item 选择DataMem从何处转发DataMem.WriteData.
 \end{itemize}
 
-\subsubsection{ALU和ALU控制单元 \lstinline|ALU, ALUControlUnit|}
-ALU模块根据 \lstinline|ALUOp| 控制信号进行相应的运算。ALU控制单元根据 \lstinline|ALUSrc| 控制信号和各个数据来源决定ALU的输入。
+\subsubsection{ALU和ALU控制单元ALU, ALUControlUnit}
+ALU模块根据ALUOp控制信号进行相应的运算。ALU控制单元根据ALUSrc控制信号和各个数据来源决定ALU的输入。
+
+\subsubsection{寄存器堆RegisterFile}
+寄存器堆模块实现寄存器的读写操作。其中写入（包括复位）在时钟下降沿完成，以便WB阶段写回的数据可以立即供ID阶段的指令使用。
+
+\subsubsection{指令存储器InstMem}
+存储指令的机器码。硬件实现时使用组合逻辑将指令硬编码到指令存储器中；仿真时通过读取参数INST\_FILE指示的文件初始化指令存储器。具体见第 \ref{subsec:behavioral-simulation} 节。
+
+\subsubsection{数据存储器DataMem}
+提供对128字节数据存储器的读写操作，以及映射为地址0x40000010的BCD7数码管的写操作。
+
+\subsubsection{控制单元ControlUnit}
+指令的操作码生成各个控制信号。具体包括：
+\begin{itemize}
+    \item PC更新时的选择信号PCSrc.
+    \item PC更新时判断是哪一种branch指令的信号Branch\_Type.
+    \item 寄存器堆写回使能信号RegWrite.
+    \item 寄存器堆写回地址选择信号RegDst.
+    \item 寄存器堆写回数据的来源选择信号MemtoReg.
+    \item 数据存储器读取使能信号MemRead.
+    \item 数据存储器写入使能信号MemWrite.
+    \item ALU输入A、输入B的来源选择信号ALUSrcA, ALUSrcB.
+    \item ALU操作码ALUOp.
+    \item 立即数扩展操作码ExtOp.
+\end{itemize}
+
+\subsubsection{程序计数器PC}
+存储当前指令的地址，并根据信号进行更新。
+
+\subsubsection{转发单元ForwardUnit}
+解决能够通过数据转发解决的数据冒险。转发路径包括：
+\begin{itemize}
+    \item 从EXMEMRegs和MEMWBRegs的输出转发到ALUControlUnit的输入。
+    \item 从MEMWBRegs的输出转发到DataMem的输入，以解决lw后紧接sw对同一地址先读后写的数据冒险。
+    \item 从MEMWBRegs的输出转发到EXMEMRegs.RegRtData，以解决lw后隔一条指令然后sw对同一寄存器先读后写的数据冒险。\footnote{这一条转发路径并不是一开始就注意到的。是经过第 \ref{subsubsec:sim-control-instructions} 节中的仿真后添加的。}
+    \item 从EXMEMRegs的输出转发到PC输入，以解决在ID阶段处理jr和jalr指令需要使用\$rs寄存器中的值的数据冒险。
+\end{itemize}
+
+\subsubsection{冒险检测单元HazardUnit}
+通过阻塞流水线来解决无法通过数据转发解决的冒险以及控制冒险，以及确定PC的PCSrc输入信号的值。冒险检测单元的逻辑包括：
+\begin{itemize}
+    \item load-use冒险：在EX阶段检测，阻塞IF, ID和EX阶段的指令一个周期，等待lw指令的结果写回寄存器堆。
+    \item jr或jalr指令需要使用前序第1或第2条指令的结果：在ID阶段检测，阻塞IF和ID阶段的指令一个周期，等待前序指令的结果写回寄存器堆。\footnote{同上。}
+    \item 分支指令的控制冒险：在EX阶段检测，清除IF和ID阶段的指令。
+    \item 跳转指令的控制冒险：在ID阶段检测，清除IF阶段的指令。
+\end{itemize}
+
+\subsubsection{立即数扩展单元ImmExtendUnit}
+根据ExtOp控制信号对指令的立即数进行符号扩展、零扩展或lui指令的高位填充。
+
+\subsubsection{级间寄存器\{IFID,IDEX,EXMEM,\\MEMWB\}Regs}
+各个阶段之间的级间寄存器。例如IFIDRegs即为IF阶段和ID阶段之间的寄存器，其余类似。用来存储后续阶段需要使用的数据和控制信号。

@@ -1,0 +1,68 @@
+\section{行为级仿真}
+
+\subsection{正确性验证}
+\label{subsec:behavioral-simulation}
+使用iverilog对CPU进行三次行为级仿真以验证设计的正确性。为方便仿真，通过SIMULATION宏控制InstMem条件编译。当进行仿真时，InstMem通过\$readmemh读取Mars转换对应汇编文件生成的机器码文件而非使用硬编码在InstMem中的指令进行初始化，从而可以在仅修改仿真代码而不修改CPU设计代码的情况下进行仿真。
+
+\subsubsection{算术指令和转发}
+\label{subsubsec:sim-arithmetic-instructions}
+本仿真（Listing \ref{code:sim-tb-CPU-inst-1-v}, \ref{code:sim-tb-CPU-inst-1-asm}, \ref{code:sim-tb-CPU-inst-1-inst}）测试了表 \ref{tab:supported-instruction} 中所有的算数指令\footnote{在编写测试用例1时未考虑到Mars翻译出来的代码实际上包含了ori指令。而且理论上ori指令与addi指令除了ALUOp信号和ALU执行的算术操作以外并无不同，故后来也未对测试用例1进行补充。}和大部分转发逻辑。在逐时钟周期分析本仿真产生的波形文件的过程中，我纠正了一些线路连接上的错误，如文件CPU.v中的某些wire型变量未连接模块的输出端口，ControlUnit的ALUOp输出位数错误等。
+
+\subsubsection{控制指令和冒险}
+\label{subsubsec:sim-control-instructions}
+本仿真（Listing \ref{code:sim-tb-CPU-inst-2-v}, \ref{code:sim-tb-CPU-inst-2-asm}, \ref{code:sim-tb-CPU-inst-2-inst}）测试了表 \ref{tab:supported-instruction} 中所有的分支指令和跳转指令以及冒险检测单元的功能。在逐时钟周期分析本仿真产生的波形文件的过程中，我补充了先前未注意到的一条转发路径和一个冒险检测逻辑：
+\begin{enumerate}
+    \item 从MEMWBRegs级间寄存器的RegWriteData转发至EXMEMRegs级间寄存器的RegRtData以解决lw后隔一条指令然后sw对同一地址先读后写的数据冒险问题。
+    \item 若IFIDRegs级间寄存器的PCSrc指示本条指令需要从寄存器中读取跳转地址并跳转（如jr或jalr等），且IFIDRegs级间寄存器的RegRsAddr与IDEXRegs级间寄存器的RegRtAddr或IDEXRegs级间寄存器的RegRdAddr相同，或EXMEMRegs的MemtoReg指示写回寄存器堆的数据由存储器提供，则将ID阶段（及ID之前）的指令阻塞一个周期，等待数据准备完成。本条逻辑解决了j型指令在ID阶段便跳转引起的数据冒险，如lw后立即使用读取到的数据进行跳转的情况。
+\end{enumerate}
+
+\subsubsection{整体的稀疏矩阵乘法程序的测试}
+本仿真（Listing \ref{code:sim-tb-CPU-inst-3-v}, \ref{code:sim-tb-CPU-inst-3-asm}, \ref{code:sim-tb-CPU-inst-3-inst}）测试了包括BCD7显示在内的整体的稀疏矩阵乘法程序。为方便仿真和观察，将BCD7数码管的刷新周期和显示每个矩阵元素时的刷新次数均减少至合适水平。由于经过了 \ref{subsubsec:sim-arithmetic-instructions} 节和 \ref{subsubsec:sim-control-instructions} 节的测试，在正确编码BCD7显示的内容后，通过观察BCD7的输出波形即简便地验证了算法和CPU设计的正确性。
+
+\subsubsection{仿真结果分析}
+以第 \ref{subsubsec:sim-arithmetic-instructions} 节中对算术指令和转发的仿真为例，通过对前若干个时钟周期内的仿真结果进行说明来展示大体的分析方法。如图 \ref{fig:sim-example-arithmetic}：
+\begin{enumerate}
+    \item 在第5ns$\sim$15ns时钟周期内，PC输出的地址为0x00400000，对应汇编指令第一行lui \$s0, 0x00ff，其机器码为0x3c1000ff，与该周期内InstMem.Instruction输出一致。
+    \item 在第15ns$\sim$25ns时钟周期内，该指令处于ID阶段，其\$rs == 0, \$rt = 0x1000，与RegisterFile.RegRead\_AddrA, RegisterFile.RegRead\_AddrB一致，同时寄存器堆正确地输出0，即便这两个数据并不会在后续被使用。
+    \item 在第25ns$\sim$35ns的时钟周期内，该指令处于EX阶段，对应ALU操作为加法，输入为扩展后的立即数，正确地对应ALU.InA == 0, ALU.InB == 0x00ff0000，且ALU.ALUOut == 0x00ff0000，输出正确。
+    \item 在第35ns$\sim$45ns的时钟周期内，该指令处于MEM阶段。由于lui指令不涉及存储器操作，DataMem.MemRead == 0, DataMem.MemWrite == 0，但存储器仍会解析\$rt。波形图与理论相符。
+    \item 在第45ns$\sim$55ns的时钟周期内，该指令处于WB阶段。从波形图看出，其RegisterFile.RegWrite == 1，CPU确实将0x00ff0000写入了0x10000号寄存器。
+\end{enumerate}
+类似地，通过逐指令地分析整个波形文件，并对每条指令逐周期地分析，可以确认CPU这部分的功能正确，因此可以推测其他未列出的信号也大概率正确。
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{images/Simulation-Example-Arithmetic.png}
+    \caption{算术指令和转发仿真结果分析示例}
+    \label{fig:sim-example-arithmetic}
+\end{figure}
+
+\subsection{测试稀疏矩阵乘法算法的CPI}
+将完整的稀疏矩阵乘法汇编程序中的稀疏矩阵乘法部分代码截取出来（Listing \ref{code:sim-tb-sparse-matmul-alog-asm}），通过Mars仿真器统计指令数为653条（图 \ref{fig:instruction-count}）。需要注意的是Mars仿真器默认数据存储地址与Verilog实现的数据存储器不同，需要在Memory Configuration中选择Compact, Data at Address 0选项。
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{images/Instruction-Count.png}
+    \vspace{-2em}
+    \caption{Mars仿真器统计指令数}
+    \label{fig:instruction-count}
+\end{figure}
+
+同时，使用Mars将该汇编代码的.text部分转换为机器码，进行行为级仿真，从波形文件中读出程序起始于10000ps，结束于7370000ps，时钟周期为10000ps（图 \ref{fig:simulation-time}）。执行这段程序消耗了736个时钟周期，因此稀疏矩阵乘法算法的CPI为
+\begin{equation}
+    \text{CPI} = \frac{\text{时钟周期数}}{\text{指令数}} = \frac{736}{653} \approx 1.13
+\end{equation}
+
+\begin{figure}[H]
+    \centering
+    \subfigure[起始时间]{
+        \includegraphics[width=\linewidth]{images/Instruction-Timing-Start.png}
+    }
+    \\
+    \subfigure[结束时间]{
+        \includegraphics[width=\linewidth]{images/Instruction-Timing-End.png}
+    }
+    \vspace{-1em}
+    \caption{稀疏矩阵乘法算法行为级仿真波形图}
+    \label{fig:simulation-time}
+\end{figure}

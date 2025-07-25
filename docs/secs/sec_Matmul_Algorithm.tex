@@ -1,0 +1,45 @@
+\section{稀疏矩阵乘法的MIPS代码}
+
+稀疏矩阵乘法的MIPS代码主要分为两部分：稀疏矩阵乘法算法和BCD7数码管显示。由于本人选修的是秋季学期的数字逻辑与处理器课程，汇编大作业实现的不是稀疏矩阵乘法算法，故前一部分使用了已有的汇编代码。下面介绍后一部分的实现。
+
+使用BCD7数码管对运算结果矩阵进行逐行逐元素的显示。对于每一个元素，利用视觉暂留效应，通过高频率刷新轮流显示每一位数字，实现人眼观察上各个数码管显示不同数字的效果。锁定BCD7数码管一次刷新的周期为4096个时钟周期，根据实际实现时的时钟频率调整显示每个矩阵元素时的刷新次数。由于结果矩阵的每个元素均在16位二进制数表示的范围内，且为了能够使一个元素一次性在4个BCD7数码管上显示，因此显示时仅显示了每个元素的低16位。
+
+设计上DataMem的BCD7输出的[7:0]控制\{DP,CG,CF,...,CA\}的显示，[11:8]控制数码管\{0,1,2,3\}的使能。数码管的显示结果与BCD7[11:0]的值的对应关系见表 \ref{tab:BCD7-display}.
+
+需要注意的是，显示十六进制数字时，字母部分全部按照大写显示。此时部分字母的显示样式会与部分数字相同，如B和8、D和0等。于是显示这两个字母时会同时将对应数码管的小数点点亮以示区别。这一点已经在表 \ref{tab:BCD7-display} 中体现。
+
+具体代码见Listing \ref{code:src-sparse-matmul-asm}.
+
+\begin{table}[H]
+    \centering
+    \begin{threeparttable}
+    \begin{tabular}{cc|cc}
+        \toprule
+        数位\tnote{$\dagger$} & BCD7[11:8] & 数字 & BCD7[7:0] \\
+        \midrule
+        *--- & 0x1 & 0x0 & 0x3F \\
+        -*-- & 0x2 & 0x1 & 0x06 \\
+        --*- & 0x4 & 0x2 & 0x5B \\
+        ---* & 0x8 & 0x3 & 0x4F \\
+             &     & 0x4 & 0x66 \\
+             &     & 0x5 & 0x6D \\
+             &     & 0x6 & 0x7D \\
+             &     & 0x7 & 0x07 \\
+             &     & 0x8 & 0x7F \\
+             &     & 0x9 & 0x6F \\
+             &     & 0xA & 0x77 \\
+             &     & 0xB & 0xFF \\
+             &     & 0xC & 0x39 \\
+             &     & 0xD & 0xBF \\
+             &     & 0xE & 0x79 \\
+             &     & 0xF & 0x71 \\
+        \bottomrule
+    \end{tabular}
+    \begin{tablenotes}
+        \footnotesize
+        \item[$\dagger$] ``-''表示该数码管不显示数字，``*''表示该数码管显示数字。
+    \end{tablenotes}
+    \end{threeparttable}
+    \caption{BCD7数码管显示结果与BCD7[11:0]的值的对应关系}
+    \label{tab:BCD7-display}
+\end{table}

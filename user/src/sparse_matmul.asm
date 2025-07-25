@@ -107,7 +107,7 @@ light:                                                      # $t4: to be the ful
     sw      $t4,            0x40000010($zero)
 
 show_loop:                                                  # innest loop, waiting with the same status
-    bge     $t2,            3072,               end_show    # $t2: innest loop variable
+    bge     $t2,            4096,               end_show    # $t2: innest loop variable
     addi    $t2,            $t2,                1           # $t2++;
     j       show_loop
 

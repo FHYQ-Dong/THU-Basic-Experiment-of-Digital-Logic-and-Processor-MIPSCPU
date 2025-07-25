@@ -1,3 +1,6 @@
+# STA
+# create_clock -period 16.000 -name sta_clk -waveform {0.000 8.000} [get_ports {clk_in}]
+
 # 100MHz clock
 set_property -dict {PACKAGE_PIN R4 IOSTANDARD LVCMOS33} [get_ports {clk_in}]
 

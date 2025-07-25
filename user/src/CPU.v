@@ -86,7 +86,7 @@ module CPU (
     wire [ 5 -1: 0] Bus_MEMWBRegs_RegWrAddr;
     wire [32 -1: 0] Bus_MEMWBRegs_RegWriteData;
 
-    PC u_PC (
+    (* keep_hierarchy = "yes" *) PC u_PC (
         .clk            (clk),
         .reset          (reset),
         .Jump_Target    ({Bus_IFIDRegs_PCPlus4[31: 28], Bus_IFIDRegs_Target26, 2'b00}),
@@ -113,13 +113,13 @@ module CPU (
         );
     `else
     // for synthesis
-        InstMem u_InstMem (
+        (* keep_hierarchy = "yes" *) InstMem u_InstMem (
             .Address     (Bus_PC_PC),
             .Instruction (Bus_InstMem_Instruction)
         );
     `endif
 
-    IFIDRegs u_IFIDRegs (
+    (* keep_hierarchy = "yes" *) IFIDRegs u_IFIDRegs (
         .clk        	(clk),
         .reset      	(reset),
         .IFID_Write 	(Bus_Hazard_IFIDReg_Write),
@@ -136,7 +136,7 @@ module CPU (
         .Imm16_Out      (Bus_IFIDRegs_Imm16),
         .Target26_Out   (Bus_IFIDRegs_Target26)
     );    
-    ControlUnit u_ControlUnit (
+    (* keep_hierarchy = "yes" *) ControlUnit u_ControlUnit (
         .OpCode      (Bus_IFIDRegs_OpCode),
         .Funct       (Bus_IFIDRegs_Funct),
         .PCSrc       (Bus_Control_PCSrc),
@@ -152,7 +152,7 @@ module CPU (
         .ALUOp       (Bus_Control_ALUOp)
     );
      
-    RegisterFile u_RegisterFile (
+    (* keep_hierarchy = "yes" *) RegisterFile u_RegisterFile (
         .clk           (clk),
         .reset         (reset),
         .RegWrite      (Bus_MEMWBRegs_RegWrite),
@@ -163,13 +163,13 @@ module CPU (
         .RegRead_DataA (Bus_RegisterFile_ReadDataA),
         .RegRead_DataB (Bus_RegisterFile_ReadDataB)
     );    
-    ImmExtendUnit u_ImmExtendUnit (
+    (* keep_hierarchy = "yes" *) ImmExtendUnit u_ImmExtendUnit (
         .Imm_In  (Bus_IFIDRegs_Imm16),
         .ExtOp   (Bus_Control_ExtOp),
         .Imm_Out (Bus_Immext_Imm)
     );
     
-    IDEXRegs u_IDEXRegs (
+    (* keep_hierarchy = "yes" *) IDEXRegs u_IDEXRegs (
         .clk             (clk),
         .reset           (reset),
         .IDEX_Write      (Bus_Hazard_IDEXReg_Write),
@@ -211,7 +211,7 @@ module CPU (
         .ALUSrcB_Out     (Bus_IDEXRegs_ALUSrcB),
         .ALUOp_Out       (Bus_IDEXRegs_ALUOp)
     );
-    ALUControlUnit u_ALUControlUnit (
+    (* keep_hierarchy = "yes" *) ALUControlUnit u_ALUControlUnit (
         .ALUSrcA          	  (Bus_IDEXRegs_ALUSrcA),
         .ALUSrcB          	  (Bus_IDEXRegs_ALUSrcB),
         .IDEX_RegRsData       (Bus_IDEXRegs_RegRsData),
@@ -229,7 +229,7 @@ module CPU (
         .OutA             	  (Bus_ALUControl_OutA),
         .OutB             	  (Bus_ALUControl_OutB)
     );
-    ALU u_ALU (
+    (* keep_hierarchy = "yes" *) ALU u_ALU (
         .InA     (Bus_ALUControl_OutA),
         .InB     (Bus_ALUControl_OutB),
         .ALUOp   (Bus_IDEXRegs_ALUOp),
@@ -237,7 +237,7 @@ module CPU (
         .ALUZero (Bus_ALU_Zero)
     );
     
-    EXMEMRegs u_EXMEMRegs (
+    (* keep_hierarchy = "yes" *) EXMEMRegs u_EXMEMRegs (
         .clk               (clk),
         .reset             (reset),
         .EXMEM_Write       (Bus_Hazard_EXMEMReg_Write),
@@ -270,7 +270,7 @@ module CPU (
         .MemtoReg_Out      (Bus_EXMEMRegs_MemtoReg),
         .ALUOut_Out        (Bus_EXMEMRegs_ALUOut)
     );
-    DataMem u_DataMem(
+    (* keep_hierarchy = "yes" *) DataMem u_DataMem(
         .clk       	(clk),
         .reset     	(reset),
         .Address   	(Bus_EXMEMRegs_ALUOut),
@@ -284,7 +284,7 @@ module CPU (
         .BCD7      	(BCD7)
     );
     
-    MEMWBRegs u_MEMWBRegs(
+    (* keep_hierarchy = "yes" *) MEMWBRegs u_MEMWBRegs(
         .clk               (clk),
         .reset             (reset),
         .MEMWB_Write       (Bus_Hazard_MEMWBReg_Write),
@@ -299,7 +299,7 @@ module CPU (
         .RegWriteData_Out  (Bus_MEMWBRegs_RegWriteData),
         .RegWrite_Out      (Bus_MEMWBRegs_RegWrite)
     );    
-    ForwardingUnit u_ForwardingUnit (
+    (* keep_hierarchy = "yes" *) ForwardingUnit u_ForwardingUnit (
         .EXMEM_RegWrite      (Bus_EXMEMRegs_RegWrite),
         .EXMEM_RegWrAddr     (Bus_EXMEMRegs_RegWrAddr),
         .MEMWB_RegWrite      (Bus_MEMWBRegs_RegWrite),
@@ -317,7 +317,7 @@ module CPU (
         .Forward_EXMEM_MEMWD (Bus_Forwarding_Forward_EXMEM_MEMWD),
         .Forward_IDEX_MEMWD  (Bus_Forwarding_Forward_IDEX_MEMWD)
     );    
-    HazardUnit u_HazardUnit (
+    (* keep_hierarchy = "yes" *) HazardUnit u_HazardUnit (
         .IDEX_MemRead     (Bus_IDEXRegs_MemRead),
         .IDEX_RegRtAddr   (Bus_IDEXRegs_RegRtAddr),
         .IDEX_RegRdAddr   (Bus_IDEXRegs_RegRdAddr),

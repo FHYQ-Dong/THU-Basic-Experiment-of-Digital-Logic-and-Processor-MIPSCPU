@@ -87,17 +87,6 @@ module IFIDRegs (
             Funct_Reg     <= Instruction_In[ 5:  0];
             Imm16_Reg     <= Instruction_In[15:  0];
             Target26_Reg  <= Instruction_In[25:  0];
-        end 
-        else begin
-            PC_Plus_4_Reg <= PC_Plus_4_Reg;
-            OpCode_Reg    <= OpCode_Reg;
-            RegRsAddr_Reg <= RegRsAddr_Reg;
-            RegRtAddr_Reg <= RegRtAddr_Reg;
-            RegRdAddr_Reg <= RegRdAddr_Reg;
-            Shamt_Reg     <= Shamt_Reg;
-            Funct_Reg     <= Funct_Reg;
-            Imm16_Reg     <= Imm16_Reg;
-            Target26_Reg  <= Target26_Reg;
         end
     end
 endmodule
@@ -227,26 +216,6 @@ module IDEXRegs (
             ALUSrcB_Reg     <= ALUSrcB_In;
             ALUOp_Reg       <= ALUOp_In;
         end 
-        else begin
-            PC_Plus_4_Reg   <= PC_Plus_4_Reg;
-            RegRsAddr_Reg   <= RegRsAddr_Reg;
-            RegRtAddr_Reg   <= RegRtAddr_Reg;
-            RegRdAddr_Reg   <= RegRdAddr_Reg;
-            RegRsData_Reg   <= RegRsData_Reg;
-            RegRtData_Reg   <= RegRtData_Reg;
-            Shamt_Reg       <= Shamt_Reg;
-            ImmExt_Reg      <= ImmExt_Reg;
-            PCSrc_Reg       <= PCSrc_Reg;
-            Branch_Type_Reg <= Branch_Type_Reg;
-            RegWrite_Reg    <= RegWrite_Reg;
-            RegDst_Reg      <= RegDst_Reg;
-            MemRead_Reg     <= MemRead_Reg;
-            MemWrite_Reg    <= MemWrite_Reg;
-            MemtoReg_Reg    <= MemtoReg_Reg;
-            ALUSrcA_Reg     <= ALUSrcA_Reg;
-            ALUSrcB_Reg     <= ALUSrcB_Reg;
-            ALUOp_Reg       <= ALUOp_Reg;
-        end
     end
 endmodule
 
@@ -298,15 +267,15 @@ module EXMEMRegs (
     // EXMEM_Flush is prioritized over EXMEM_Write
     always @(posedge clk) begin
         if (reset || EXMEM_Flush) begin
-            PC_Plus_4_Reg      <= 32'h0000_0000;
-            RegWrite_Reg       <= 1'b0;
-            RegWrite_Addr_Reg  <= 5'h00;
-            MemRead_Reg        <= 1'b0;
-            MemWrite_Reg       <= 1'b0;
-            RegRtAddr_Reg      <= 32'h0000_0000;
-            RegRtData_Reg      <= 32'h0000_0000;
-            MemtoReg_Reg       <= 2'b00;
-            ALUOut_Reg         <= 32'h0000_0000;
+            PC_Plus_4_Reg     <= 32'h0000_0000;
+            RegWrite_Reg      <= 1'b0;
+            RegWrite_Addr_Reg <= 5'h00;
+            MemRead_Reg       <= 1'b0;
+            MemWrite_Reg      <= 1'b0;
+            RegRtAddr_Reg     <= 32'h0000_0000;
+            RegRtData_Reg     <= 32'h0000_0000;
+            MemtoReg_Reg      <= 2'b00;
+            ALUOut_Reg        <= 32'h0000_0000;
         end 
         else if (EXMEM_Write) begin
             PC_Plus_4_Reg     <= PC_Plus_4_In;
@@ -318,17 +287,6 @@ module EXMEMRegs (
             RegRtData_Reg     <= RegRtData_In;
             MemtoReg_Reg      <= MemtoReg_In;
             ALUOut_Reg        <= ALUOut_In;
-        end 
-        else begin
-            PC_Plus_4_Reg     <= PC_Plus_4_Reg;
-            RegWrite_Reg      <= RegWrite_Reg;
-            RegWrite_Addr_Reg <= RegWrite_Addr_Reg;
-            MemRead_Reg       <= MemRead_Reg;
-            MemWrite_Reg      <= MemWrite_Reg;
-            RegRtAddr_Reg     <= RegRtAddr_Reg;
-            RegRtData_Reg     <= RegRtData_Reg;
-            MemtoReg_Reg      <= MemtoReg_Reg;
-            ALUOut_Reg        <= ALUOut_Reg;
         end
     end
 endmodule
@@ -359,7 +317,6 @@ module MEMWBRegs (
     reg             RegWrite_Reg;
     reg  [ 5 -1: 0] RegWrite_Addr_Reg;
     reg  [32 -1: 0] RegWriteData_Reg;
-    reg  [32 -1: 0] MemData_Reg;
     wire [32 -1: 0] RegWriteData_Wire = 
         (MemtoReg_In == MemtoReg_MemData) ? MemData_In :
         (MemtoReg_In == MemtoReg_PCPlus4) ? PC_Plus_4_In :
@@ -369,26 +326,17 @@ module MEMWBRegs (
     assign RegWrite_Addr_Out = RegWrite_Addr_Reg;
     assign RegWriteData_Out  = RegWriteData_Reg;
     
-    
     // MEMWB_Flush is prioritized over MEMWB_Write
     always @(posedge clk) begin
         if (reset || MEMWB_Flush) begin
             RegWrite_Reg      <= 1'b0;
             RegWrite_Addr_Reg <= 5'h00;
-            MemData_Reg       <= 32'h0000_0000;
             RegWriteData_Reg  <= 32'h0000_0000;
         end 
         else if (MEMWB_Write) begin
             RegWrite_Reg      <= RegWrite_In;
             RegWrite_Addr_Reg <= RegWrite_Addr_In;
-            MemData_Reg       <= MemData_In;
             RegWriteData_Reg  <= RegWriteData_Wire;
-        end 
-        else begin
-            RegWrite_Reg      <= RegWrite_Reg;
-            RegWrite_Addr_Reg <= RegWrite_Addr_Reg;
-            MemData_Reg       <= MemData_Reg;
-            RegWriteData_Reg  <= RegWriteData_Reg;
         end
     end
 endmodule

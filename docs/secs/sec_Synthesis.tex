@@ -1,0 +1,30 @@
+\section{综合}
+
+\subsection{时序分析和时钟频率}
+设置时钟周期为10ns，占空比为50\%，在Vivado中综合后进行时序分析。结果显示建立时间约束违例 -5.827ns，保持时间约束富裕0.127ns，关键路径见图 \ref{fig:sta-setup}. 需要注意的是Vivado可能会将一些逻辑比较简单的模块合并到其他模块中，需要在实例化模块时使用(* keep\_hierarchy = ``yes'' *)语句来保留模块层次结构以便更清晰地观察关键路径。
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{images/STA-Setup.pdf}
+    \vspace{-2em}
+    \caption{时序分析建立时间的关键路径}
+    \label{fig:sta-setup}
+\end{figure}
+
+将时钟周期改为16ns，占空比为50\%，重新进行时序分析，结果显示建立时间和保持时间约束均满足。于是使用锁相环IP将原始时钟信号分频至60MHz，作为CPU的时钟。
+
+\subsection{资源占用}
+资源占用情况如图 \ref{fig:utilization}. 各资源占用情况均不超过20\%. 其中，LUT主要在DataMem和ALU中被使用，主要负责逻辑运算；FF主要在DataMem和RegisterFile中被使用，主要负责存储；MUX主要在DataMem和RegisterFile中被使用，主要负责选择存储单元；DSP仅在ALU中被使用，负责乘法运算；PLL用于分频器，负责将原始时钟信号分频至60MHz。
+
+\begin{figure}[H]
+    \centering
+    \subfigure[总体情况]{
+        \includegraphics[width=\linewidth]{images/Utilization-Summary.png}
+    } \\
+    \subfigure[各模块占用情况]{
+        \includegraphics[width=\linewidth]{images/Utilization-Hierarchy.png}
+    }
+    \vspace{-1em}
+    \caption{资源占用情况}
+    \label{fig:utilization}
+\end{figure}
